@@ -17,7 +17,7 @@ public class RootDrive extends Root {
     public Point sides;
     public Motor right, left;
     public Motor extr, rotr, extl, rotl;
-    public BServo cdr, cdl;
+    public BServo cdr, cdl, cds;
 
     public SensorPool sp;
 
@@ -37,6 +37,7 @@ public class RootDrive extends Root {
 
         cdr = new BServo("cdsRight", hardwareMap);
         cdl = new BServo("cdsLeft", hardwareMap, true);
+        cds = new BServo("cds", hardwareMap, true);
 
         sp = new SensorPool(hardwareMap, console);
     }
@@ -48,10 +49,10 @@ public class RootDrive extends Root {
     }
 
     @Override
-    public void onJoy2_right()
+    public void onJoy2_left()
     {
-        left.scale(joy2.right.y + joy2.right.x);
-        right.scale(joy2.right.y - joy2.right.x);
+        left.scale(joy2.left.y + joy2.left.x);
+        right.scale(joy2.left.y - joy2.left.x);
     }
 
     @Override
@@ -105,31 +106,6 @@ public class RootDrive extends Root {
 
 
     @Override
-    public void onJoy2_left()
-    {
-        rotl.set(joy2.left.y / 2);
-
-    }
-
-    @Override
-    public void onJoy2_lt()
-    {
-        extl.scale(-gp2_lt);
-    }
-
-    @Override
-    public void onJoy2_lb_press()
-    {
-        extl.set(1);
-    }
-
-    @Override
-    public void onJoy2_lb_release()
-    {
-        extl.set(0);
-    }
-
-    @Override
     public void onJoy2_rb_press()
     {
         cdr.set(1);
@@ -141,21 +117,23 @@ public class RootDrive extends Root {
         cdr.set(0);
     }
 
-    /*@Override
+    @Override
     public void onJoy2_lb_press()
     {
         cdl.set(1);
-        console.log("ahh", cdl.get() + "");
-
     }
 
     @Override
     public void onJoy2_lb_release()
     {
         cdl.set(0);
-        console.log("ahh", cdl.get()+"");
-    }*/
+    }
 
+    @Override
+    public void onJoy2_rt()
+    {
+        cds.set(gp2_rt);
+    }
 
 
 }
