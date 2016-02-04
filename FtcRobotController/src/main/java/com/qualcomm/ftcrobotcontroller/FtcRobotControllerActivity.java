@@ -74,10 +74,8 @@ import com.qualcomm.robotcore.util.ImmersiveMode;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.Serializable;
 
 public class FtcRobotControllerActivity extends Activity {
@@ -86,16 +84,9 @@ public class FtcRobotControllerActivity extends Activity {
     private static final boolean USE_DEVICE_EMULATION = false;
     private static final int NUM_GAMEPADS = 2;
 
-    public static int waittime;
-    public static boolean isRed;
-
-<<<<<<< HEAD
     public static final String CONFIGURE_FILENAME = "CONFIGURE_FILENAME";
-=======
-  protected WifiManager.WifiLock wifiLock;
-  protected SharedPreferences preferences;
->>>>>>> upstream/master
 
+    protected WifiManager.WifiLock wifiLock;
     protected SharedPreferences preferences;
 
     protected UpdateUI.Callback callback;
@@ -110,20 +101,19 @@ public class FtcRobotControllerActivity extends Activity {
     protected TextView textOpMode;
     protected TextView textErrorMessage;
     protected ImmersiveMode immersion;
-    protected Switch switch1;
-    protected Switch switch2;
-    protected EditText delayNum;
-
 
     protected UpdateUI updateUI;
     protected Dimmer dimmer;
     protected LinearLayout entireScreenLayout;
 
+    protected Switch switch1;
+    protected EditText delayNum;
+    public static boolean isRed;
+    public static int waittime;
+
     protected FtcRobotControllerService controllerService;
 
     protected FtcEventLoop eventLoop;
-
-    protected File configs;
 
     protected class RobotRestarter implements Restarter {
 
@@ -199,14 +189,17 @@ public class FtcRobotControllerActivity extends Activity {
             @Override
             public void afterTextChanged(Editable s) {
 
-                if(isInteger(s.toString()))
-                waittime = Integer.parseInt(s.toString());
+                if (isInteger(s.toString()))
+                    waittime = Integer.parseInt(s.toString());
             }
 
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) { }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
         });
 
 
@@ -231,145 +224,24 @@ public class FtcRobotControllerActivity extends Activity {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
+        WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "");
+
         hittingMenuButtonBrightensScreen();
 
-        if (USE_DEVICE_EMULATION) {
-            HardwareFactory.enableDeviceEmulation();
-        }
+        if (USE_DEVICE_EMULATION) { HardwareFactory.enableDeviceEmulation(); }
     }
 
-    protected void writeConfig(String string)
-    {
-        String filename = "auto.properties";
-        FileOutputStream outputStream;
-
+    public static boolean isInteger(String s) {
         try {
-          outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-          outputStream.write(string.getBytes());
-          outputStream.close();
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-    }
-<<<<<<< HEAD
-
-    public boolean isInteger( String input ) {
-        try {
-            Integer.parseInt( input );
-            return true;
-        }
-        catch( Exception e ) {
+            Integer.parseInt(s);
+        } catch(NumberFormatException e) {
+            return false;
+        } catch(NullPointerException e) {
             return false;
         }
-=======
-  }
-
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-
-    setContentView(R.layout.activity_ftc_controller);
-
-    utility = new Utility(this);
-    context = this;
-    entireScreenLayout = (LinearLayout) findViewById(R.id.entire_screen);
-    buttonMenu = (ImageButton) findViewById(R.id.menu_buttons);
-    buttonMenu.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        openOptionsMenu();
-      }
-    });
-
-    textDeviceName = (TextView) findViewById(R.id.textDeviceName);
-    textWifiDirectStatus = (TextView) findViewById(R.id.textWifiDirectStatus);
-    textRobotStatus = (TextView) findViewById(R.id.textRobotStatus);
-    textOpMode = (TextView) findViewById(R.id.textOpMode);
-    textErrorMessage = (TextView) findViewById(R.id.textErrorMessage);
-    textGamepad[0] = (TextView) findViewById(R.id.textGamepad1);
-    textGamepad[1] = (TextView) findViewById(R.id.textGamepad2);
-    immersion = new ImmersiveMode(getWindow().getDecorView());
-    dimmer = new Dimmer(this);
-    dimmer.longBright();
-    Restarter restarter = new RobotRestarter();
-
-    updateUI = new UpdateUI(this, dimmer);
-    updateUI.setRestarter(restarter);
-    updateUI.setTextViews(textWifiDirectStatus, textRobotStatus,
-        textGamepad, textOpMode, textErrorMessage, textDeviceName);
-    callback = updateUI.new Callback();
-
-    PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-    preferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-    WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-    wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "");
-
-    hittingMenuButtonBrightensScreen();
-
-    if (USE_DEVICE_EMULATION) { HardwareFactory.enableDeviceEmulation(); }
-  }
-
-  @Override
-  protected void onStart() {
-    super.onStart();
-
-    // save 4MB of logcat to the SD card
-    RobotLog.writeLogcatToDisk(this, 4 * 1024);
-
-    Intent intent = new Intent(this, FtcRobotControllerService.class);
-    bindService(intent, connection, Context.BIND_AUTO_CREATE);
-
-    utility.updateHeader(Utility.NO_FILE, R.string.pref_hardware_config_filename, R.id.active_filename, R.id.included_header);
-
-    callback.wifiDirectUpdate(WifiDirectAssistant.Event.DISCONNECTED);
-
-    entireScreenLayout.setOnTouchListener(new View.OnTouchListener() {
-      @Override
-      public boolean onTouch(View v, MotionEvent event) {
-        dimmer.handleDimTimer();
-        return false;
-      }
-    });
-
-    wifiLock.acquire();
-  }
-
-  @Override
-  protected void onResume() {
-    super.onResume();
-  }
-
-  @Override
-  public void onPause() {
-    super.onPause();
-  }
-
-  @Override
-  protected void onStop() {
-    super.onStop();
-
-    if (controllerService != null) unbindService(connection);
-
-    RobotLog.cancelWriteLogcatToDisk(this);
-
-    wifiLock.release();
-  }
-
-  @Override
-  public void onWindowFocusChanged(boolean hasFocus){
-    super.onWindowFocusChanged(hasFocus);
-    // When the window loses focus (e.g., the action overflow is shown),
-    // cancel any pending hide action. When the window gains focus,
-    // hide the system UI.
-    if (hasFocus) {
-      if (ImmersiveMode.apiOver19()){
-        // Immersive flag only works on API 19 and above.
-        immersion.hideSystemUI();
-      }
-    } else {
-      immersion.cancelSystemUIHide();
->>>>>>> upstream/master
+        // only got here if we didn't return false
+        return true;
     }
 
     @Override
@@ -394,6 +266,7 @@ public class FtcRobotControllerActivity extends Activity {
             }
         });
 
+        wifiLock.acquire();
     }
 
     @Override
@@ -413,16 +286,18 @@ public class FtcRobotControllerActivity extends Activity {
         if (controllerService != null) unbindService(connection);
 
         RobotLog.cancelWriteLogcatToDisk(this);
+
+        wifiLock.release();
     }
 
     @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
+    public void onWindowFocusChanged(boolean hasFocus){
         super.onWindowFocusChanged(hasFocus);
         // When the window loses focus (e.g., the action overflow is shown),
         // cancel any pending hide action. When the window gains focus,
         // hide the system UI.
         if (hasFocus) {
-            if (ImmersiveMode.apiOver19()) {
+            if (ImmersiveMode.apiOver19()){
                 // Immersive flag only works on API 19 and above.
                 immersion.hideSystemUI();
             }
@@ -511,9 +386,7 @@ public class FtcRobotControllerActivity extends Activity {
 
         FileInputStream fis = fileSetup();
         // if we can't find the file, don't try and build the robot.
-        if (fis == null) {
-            return;
-        }
+        if (fis == null) { return; }
 
         HardwareFactory factory;
 

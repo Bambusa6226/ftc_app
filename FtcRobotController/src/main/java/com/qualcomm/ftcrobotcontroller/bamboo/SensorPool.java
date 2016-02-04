@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.LightSensor;
+import com.qualcomm.robotcore.hardware.UltrasonicSensor;
 
 import java.text.DecimalFormat;
 
@@ -20,6 +21,7 @@ public class SensorPool {
     public LightSensor lLeft;
     public Gyro gyro;
     private Console console;
+    public UltrasonicSensor us;
 
     public SensorPool(HardwareMap hardwareMap, Console cn)
     {
@@ -27,6 +29,7 @@ public class SensorPool {
         lRight = hardwareMap.lightSensor.get("lightRight");
         lLeft = hardwareMap.lightSensor.get("lightLeft");
         gyro = new Gyro("gyro", hardwareMap);
+        us = hardwareMap.ultrasonicSensor.get("us");
 
         right = new Motor("right", hardwareMap);
         left = new Motor("left", hardwareMap, true);
@@ -71,6 +74,7 @@ public class SensorPool {
         console.log("bro", df.format(right.turns()) + ", " + df.format(left.turns()));
         console.log("rl", df.format(r)+", "+df.format(l));
         console.log("ggg", df.format(dpsr)+",  "+df.format(rrot.get()));
+        console.log("us", df.format(us.getUltrasonicLevel())+"");
     }
 
     public double sigmoid(double inp)
