@@ -29,7 +29,15 @@ public class NewDeal extends LinearOpMode {
     Motor right, left, rotLeft, rotRight, extLeft, extRight;
     BServo cds;
 
+    private final double shortdist = 11.3;
+    private final double longdist = 6.4;
+    private final double walldist = 21.0;
+    private final double white = 50;
 
+    private final double regspeed = 0.5;
+    private final double slowspeed = 0.3;
+
+    private final double turndeg = 30;
 
 
     @Override
@@ -67,13 +75,34 @@ public class NewDeal extends LinearOpMode {
         }
 
         // and we start....
-        //encoderStraight(10, 0.5);
-        findWall(10, 0.2);
+        //followWall(21, 50, 0, 0.4);
+        //turnDegrees(360, 1.0);
+
+        if(FtcRobotControllerActivity.isRed)
+        {
+            encoderStraight(6.6, 0.5);
+            turnDegrees(37, 1.0);
+            encoderStraight(0.3, 0.5);
+            deployClimbers();
+            Thread.sleep(1000);
+            cds.set(0);
+        }
+
+
+        //encoderStraight(15, 0.5);
+        //findWall(0, 0);
+
+        // 11.3 far, 6.4 close
+        // 21 light dist, ~50 color
+
 /*
 
         if(FtcRobotControllerActivity.isRed)
         {
-            
+            encoderStraight(shortdist, regspeed);
+            turnDegrees(turndeg, regspeed);
+            followWall(walldist, white, 6.0, slowspeed);
+            adjustmentBlue();
         }
         else
         {
@@ -88,7 +117,7 @@ public class NewDeal extends LinearOpMode {
 
     public void encoderStraight(double turns, double speed) throws InterruptedException
     {
-        double k = 10;
+        double k = 0.1;
         right.set(speed);
         left.set(speed);
         double tns = 0;
@@ -98,10 +127,10 @@ public class NewDeal extends LinearOpMode {
         {
              r += right.turnDiff();
              l += left.turnDiff();
-            double amt = sigmoid((l-r)*k);
-            right.set(amt*speed*2);
-            left.set(1-(amt*speed*2));
-            telemetry.addData("tn", tns+", "+right.get()+" - "+left.get());
+            double amt = sigmoid((l-r)/k);
+            right.set(amt * speed * 2);
+            left.set(1 - (amt * speed * 2));
+            telemetry.addData("tn", ((r+l)/2)+", "+right.get()+" - "+left.get());
             Thread.sleep(100);
         }
         right.stop();
@@ -110,14 +139,17 @@ public class NewDeal extends LinearOpMode {
 
     public void findWall(double dist, double speed) throws InterruptedException
     {
-        double level = dist*2;
+        double level = (dist*2)+10;
+        double lcc = 0.9;
+
         right.set(speed);
         left.set(speed);
         while(level > dist && opModeIsActive())
         {
-            level = level*(0.8) + us.getUltrasonicLevel()*0.2;
+            level = level*(lcc) + us.getUltrasonicLevel()*(1-lcc);
             Thread.sleep(10);
-            telemetry.addData("w",us.getUltrasonicLevel()+", "+ level);
+            telemetry.addData("w", us.getUltrasonicLevel() + ", " + level);
+            telemetry.addData("dn", lightLeft.get());
         }
         right.stop();
         left.stop();
@@ -138,24 +170,31 @@ public class NewDeal extends LinearOpMode {
             timelast = System.currentTimeMillis();
             timediff = timelast - timediff;
             gypos += gyro.dps() * (timediff);
+            telemetry.addData("turn", gypos);
         }
 
         right.stop();
         left.stop();
     }
 
-    public void followWall(int dist, int stopcolor, double giveup, double speed)
+    public void followWall(int dist, int stopcolor, double giveup, double speed) throws InterruptedException
     {
-        double kval = 1;
-        double lightc = 0;
+        double kval = 30;
+        double lightc = 100;
         double lcc = 0.5;
 
-        while(lightc < stopcolor && opModeIsActive())
+        while(lightc > stopcolor && opModeIsActive())
         {
             lightc = lightc*(lcc)+lightLeft.get()*(1-lcc);
-            double sp = sigmoid((us.getUltrasonicLevel()-dist)*kval);
+            double sp = sigmoid((us.getUltrasonicLevel()-dist)/kval);
             right.set(sp*(speed*2));
-            left.set(1-(sp*(speed*2)));
+            left.set((speed*2)- (sp * (speed * 2)));
+
+            telemetry.addData("us", us.getUltrasonicLevel()+", "+sp);
+            telemetry.addData("ls", lightLeft.get()+", "+lightc);
+            telemetry.addData("lr", left.get() + ", "+right.get());
+
+            Thread.sleep(10);
         }
         right.stop();
         left.stop();
