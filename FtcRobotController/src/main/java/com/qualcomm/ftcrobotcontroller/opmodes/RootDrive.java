@@ -40,11 +40,16 @@ public class RootDrive extends Root {
         cds = new BServo("cds", hardwareMap, true);
 
         sp = new SensorPool(hardwareMap, console);
+
+        cds.set(0.7);
+        cdl.set(0);
+        cdr.set(0);
     }
 
     @Override
     public void update()
     {
+        if(gp2_rt < 0.2) cds.set(0.7);
         sp.update();
     }
 

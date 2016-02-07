@@ -84,8 +84,13 @@ public class NewDeal extends LinearOpMode {
             turnDegrees(37, 1.0);
             encoderStraight(0.3, 0.5);
             deployClimbers();
-            Thread.sleep(1000);
-            cds.set(0);
+        }
+        else
+        {
+            encoderStraight(-6.6, -0.5);
+            turnDegrees(-37, -1.0);
+            encoderStraight(-0.3, -0.5);
+            deployClimbers();
         }
 
 
@@ -123,14 +128,15 @@ public class NewDeal extends LinearOpMode {
         double tns = 0;
         double r=0, l=0;
         right.turnDiff();left.turnDiff();
-        while((r+l)/2 < turns && opModeIsActive())
-        {
-             r += right.turnDiff();
-             l += left.turnDiff();
-            double amt = sigmoid((l-r)/k);
+        while((((r+l)/2 < turns && turns > 0) || ((r+l)/2 > turns && turns < 0)) && opModeIsActive()) {
+            r += right.turnDiff();
+            l += left.turnDiff();
+            double amt = sigmoid((l - r) / k);
+
             right.set(amt * speed * 2);
-            left.set(1 - (amt * speed * 2));
-            telemetry.addData("tn", ((r+l)/2)+", "+right.get()+" - "+left.get());
+            left.set((speed*2) - (amt * speed * 2));
+
+            telemetry.addData("tn", ((r + l) / 2) + ", " + right.get() + " - " + left.get());
             Thread.sleep(100);
         }
         right.stop();
@@ -164,7 +170,7 @@ public class NewDeal extends LinearOpMode {
         right.set(speed);
         left.set(-speed);
 
-        while(gypos < degrees && opModeIsActive())
+        while(((gypos < degrees && degrees > 0) || (gypos > degrees && degrees < 0)) && opModeIsActive())
         {
             long timediff = timelast;
             timelast = System.currentTimeMillis();
@@ -210,9 +216,14 @@ public class NewDeal extends LinearOpMode {
 
     }
 
-    public void deployClimbers()
+    public void deployClimbers() throws InterruptedException
     {
         cds.set(1);
+        Thread.sleep(1000);
+        cds.set(0);
+        Thread.sleep(1000);
+        cds.set(1);
+        Thread.sleep(1000);
     }
 
     public double sigmoid(double n)

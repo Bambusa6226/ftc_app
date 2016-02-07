@@ -152,10 +152,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         android:layout_height="wrap_content"
         android:text="Red Team"
         android:id="@+id/switch1"
+        android:checked="false"
         android:layout_below="@+id/textErrorMessage"
-        android:layout_alignLeft="@+id/editText"
-        android:layout_alignStart="@+id/editText"
-        android:checked="false" />
+        android:layout_alignLeft="@+id/delayNum"
+        android:layout_alignStart="@+id/delayNum" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -164,9 +164,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         android:ems="10"
         android:id="@+id/delayNum"
         android:text="0"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/switch1" />
+        android:layout_below="@+id/switch1"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="33dp" />
+
 
   </RelativeLayout>
 </LinearLayout>
