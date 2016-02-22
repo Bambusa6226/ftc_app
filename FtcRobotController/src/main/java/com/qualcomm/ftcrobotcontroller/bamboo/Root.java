@@ -41,6 +41,16 @@ public class Root extends OpMode {
     public void onJoy2_rb_release() {}
     public void onJoy2_lb_release() {}
 
+    public void onAButton1() {}
+    public void onBButton1() {}
+    public void onXButton1() {}
+    public void onYButton1() {}
+
+    public void onAButton2() {}
+    public void onBButton2() {}
+    public void onXButton2() {}
+    public void onYButton2() {}
+
     public void update() {};
 
 
@@ -49,6 +59,9 @@ public class Root extends OpMode {
     {
         console.log("init", "Root has initialized");
     }
+
+    @Override
+    public void stop() {}
 
 
     @Override
@@ -143,6 +156,16 @@ public class Root extends OpMode {
             joy2.left.y = gamepad2.left_stick_y;
             onJoy2_left();
         }
+
+        if(gamepad1.a) onAButton1();
+        if(gamepad1.b) onBButton1();
+        if(gamepad1.x) onXButton1();
+        if(gamepad1.y) onYButton1();
+
+        if(gamepad2.a) onAButton2();
+        if(gamepad2.b) onBButton2();
+        if(gamepad2.x) onXButton2();
+        if(gamepad2.y) onYButton2();
 
     }
 

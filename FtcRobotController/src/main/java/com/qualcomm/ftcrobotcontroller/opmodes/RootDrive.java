@@ -17,7 +17,7 @@ public class RootDrive extends Root {
     public Point sides;
     public Motor right, left;
     public Motor extr, rotr, extl, rotl;
-    public BServo cdr, cdl, cds;
+    public BServo cdr, cdl, cds, labr, labl;
 
     public SensorPool sp;
 
@@ -39,18 +39,31 @@ public class RootDrive extends Root {
         cdl = new BServo("cdsLeft", hardwareMap, true);
         cds = new BServo("cds", hardwareMap, true);
 
+        labr = new BServo("labr", hardwareMap);
+        labl = new BServo("labl", hardwareMap, true);
+
         sp = new SensorPool(hardwareMap, console);
 
         cds.set(0.7);
         cdl.set(0);
         cdr.set(0);
+
+        labr.set(0);
+        labl.set(0);
     }
 
     @Override
     public void update()
     {
-        if(gp2_rt < 0.2) cds.set(0.7);
+        if(gp2_rt < 0.05 && !gamepad2.b) cds.set(0.7);
+        else cds.set(0);
         sp.update();
+    }
+
+    @Override
+    public void stop()
+    {
+        cds.set(0);
     }
 
     @Override
@@ -137,8 +150,13 @@ public class RootDrive extends Root {
     @Override
     public void onJoy2_rt()
     {
-        cds.set(gp2_rt);
+        labr.set(gp2_rt);
     }
 
+    @Override
+    public void onJoy2_lt()
+    {
+        labl.set(gp2_lt);
+    }
 
 }

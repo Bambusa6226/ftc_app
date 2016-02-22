@@ -80,17 +80,23 @@ public class NewDeal extends LinearOpMode {
 
         if(FtcRobotControllerActivity.isRed)
         {
-            encoderStraight(6.6, 0.5);
-            turnDegrees(37, 1.0);
+            encoderStraight(1, 0.5);
+            turnDegrees(-40, -1.0);
+            encoderStraight(4, 0.5);
+            turnDegrees(40, 1.0);
             encoderStraight(0.3, 0.5);
             deployClimbers();
+            encoderStraight(-1.4, -0.5);
         }
         else
         {
-            encoderStraight(-6.6, -0.5);
-            turnDegrees(-37, -1.0);
+            encoderStraight(-1, -0.5);
+            turnDegrees(40, 1.0);
+            encoderStraight(-4, -0.5);
+            turnDegrees(-40, -1.0);
             encoderStraight(-0.3, -0.5);
             deployClimbers();
+            encoderStraight(1.4, 0.5);
         }
 
 
@@ -131,7 +137,7 @@ public class NewDeal extends LinearOpMode {
         while((((r+l)/2 < turns && turns > 0) || ((r+l)/2 > turns && turns < 0)) && opModeIsActive()) {
             r += right.turnDiff();
             l += left.turnDiff();
-            double amt = sigmoid((l - r) / k);
+            double amt = sigmoid((Math.abs(l) - Math.abs(r)) / k);
 
             right.set(amt * speed * 2);
             left.set((speed*2) - (amt * speed * 2));
