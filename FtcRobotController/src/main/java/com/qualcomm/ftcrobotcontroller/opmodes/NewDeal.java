@@ -82,7 +82,7 @@ public class NewDeal extends LinearOpMode {
         {
             encoderStraight(1, 0.5);
             turnDegrees(-40, -1.0);
-            encoderStraight(4, 0.5);
+            encoderStraight(5.5, 0.5);
             turnDegrees(40, 1.0);
             encoderStraight(0.3, 0.5);
             deployClimbers();
@@ -92,7 +92,7 @@ public class NewDeal extends LinearOpMode {
         {
             encoderStraight(-1, -0.5);
             turnDegrees(40, 1.0);
-            encoderStraight(-4, -0.5);
+            encoderStraight(-5.5, -0.5);
             turnDegrees(-40, -1.0);
             encoderStraight(-0.3, -0.5);
             deployClimbers();

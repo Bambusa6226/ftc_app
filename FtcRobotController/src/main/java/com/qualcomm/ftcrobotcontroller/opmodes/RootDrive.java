@@ -52,12 +52,17 @@ public class RootDrive extends Root {
         labl.set(0);
     }
 
+    double labcr=0, labcl=0;
+
     @Override
     public void update()
     {
-        if(gp2_rt < 0.05 && !gamepad2.b) cds.set(0.7);
+        if(gp2_lt < 0.05 && !gamepad2.b) cds.set(0.7);
         else cds.set(0);
         sp.update();
+
+        labcr += 
+
     }
 
     @Override
@@ -150,13 +155,13 @@ public class RootDrive extends Root {
     @Override
     public void onJoy2_rt()
     {
-        labr.set(gp2_rt);
+        labr.set(1);
     }
 
     @Override
     public void onJoy2_lt()
     {
-        labl.set(gp2_lt);
+        labl.set(1);
     }
 
 }
