@@ -21,13 +21,13 @@ public class NewDeal extends LinearOpMode {
 
 
 
-    Light lightRight;
-    Light lightLeft;
+    //Light lightRight;
+    //Light lightLeft;
     Gyro gyro;
-    UltrasonicSensor us;
+    //UltrasonicSensor us;
 
     Motor right, left, rotLeft, rotRight, extLeft, extRight;
-    BServo cds;
+    BServo cds, labr, labl, cdr, cdl;
 
     private final double shortdist = 11.3;
     private final double longdist = 6.4;
@@ -44,10 +44,10 @@ public class NewDeal extends LinearOpMode {
     public void runOpMode() throws InterruptedException
     {
 
-        lightRight = new Light("lightRight", hardwareMap);
-        lightLeft = new Light("lightLeft", hardwareMap);
+        //lightRight = new Light("lightRight", hardwareMap);
+        //lightLeft = new Light("lightLeft", hardwareMap);
         gyro = new Gyro("gyro", hardwareMap);
-        us = hardwareMap.ultrasonicSensor.get("us");
+        //us = hardwareMap.ultrasonicSensor.get("us");
 
         right = new Motor("right", hardwareMap);
         left = new Motor("left", hardwareMap, true);
@@ -56,10 +56,24 @@ public class NewDeal extends LinearOpMode {
         rotLeft = new Motor("leftrot", hardwareMap);
         extRight = new Motor("rightext", hardwareMap);
         extLeft = new Motor("leftext", hardwareMap, true);
-        cds = new BServo("cds", hardwareMap);
+        cds = new BServo("cds", hardwareMap, true);
 
-        lightRight.enable();
-        lightLeft.enable();
+        labr = new BServo("labr", hardwareMap);
+        labl = new BServo("labl", hardwareMap, true);
+
+        cdr = new BServo("cdsRight", hardwareMap);
+        cdl = new BServo("cdsLeft", hardwareMap, true);
+
+
+        labr.set(0.5);
+        labl.set(0.5);
+        cdr.set(0);
+        cdl.set(0);
+        cds.set(0);
+
+
+        //lightRight.enable();
+        //lightLeft.enable();
 
         telemetry.addData("wait", FtcRobotControllerActivity.waittime);
 
@@ -80,23 +94,23 @@ public class NewDeal extends LinearOpMode {
 
         if(FtcRobotControllerActivity.isRed)
         {
-            encoderStraight(1, 0.5);
-            turnDegrees(-40, -1.0);
-            encoderStraight(5.5, 0.5);
-            turnDegrees(40, 1.0);
-            encoderStraight(0.3, 0.5);
+            encoderStraight(1, 0.35);
+            turnDegrees(-37, -0.7);
+            encoderStraight(4.7, 0.35);
+            turnDegrees(37, 0.7);
+            //encoderStraight(-0.1, -0.3);
             deployClimbers();
-            encoderStraight(-1.4, -0.5);
+            encoderStraight(-1.2, -0.35);
         }
         else
         {
             encoderStraight(-1, -0.5);
-            turnDegrees(40, 1.0);
-            encoderStraight(-5.5, -0.5);
-            turnDegrees(-40, -1.0);
-            encoderStraight(-0.3, -0.5);
+            turnDegrees(37, 0.7);
+            encoderStraight(-4.5, -0.5);
+            turnDegrees(-37, -0.7);
+            //encoderStraight(0.1, 0.3);
             deployClimbers();
-            encoderStraight(1.4, 0.5);
+            encoderStraight(1.2, 0.5);
         }
 
 
@@ -149,7 +163,7 @@ public class NewDeal extends LinearOpMode {
         left.stop();
     }
 
-    public void findWall(double dist, double speed) throws InterruptedException
+    /*public void findWall(double dist, double speed) throws InterruptedException
     {
         double level = (dist*2)+10;
         double lcc = 0.9;
@@ -165,7 +179,7 @@ public class NewDeal extends LinearOpMode {
         }
         right.stop();
         left.stop();
-    }
+    }*/
 
     public void turnDegrees(double degrees, double speed)
     {
@@ -189,7 +203,7 @@ public class NewDeal extends LinearOpMode {
         left.stop();
     }
 
-    public void followWall(int dist, int stopcolor, double giveup, double speed) throws InterruptedException
+    /*public void followWall(int dist, int stopcolor, double giveup, double speed) throws InterruptedException
     {
         double kval = 30;
         double lightc = 100;
@@ -210,7 +224,7 @@ public class NewDeal extends LinearOpMode {
         }
         right.stop();
         left.stop();
-    }
+    }*/
 
     public void adjustmentRed()
     {
@@ -225,11 +239,11 @@ public class NewDeal extends LinearOpMode {
     public void deployClimbers() throws InterruptedException
     {
         cds.set(1);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         cds.set(0);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         cds.set(1);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
     }
 
     public double sigmoid(double n)

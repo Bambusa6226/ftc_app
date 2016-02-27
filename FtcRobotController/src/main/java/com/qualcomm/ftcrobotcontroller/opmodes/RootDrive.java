@@ -19,7 +19,7 @@ public class RootDrive extends Root {
     public Motor extr, rotr, extl, rotl;
     public BServo cdr, cdl, cds, labr, labl;
 
-    public SensorPool sp;
+    //public SensorPool sp;
 
     public RootDrive() {
         sides = new Point(0, 0);
@@ -42,26 +42,52 @@ public class RootDrive extends Root {
         labr = new BServo("labr", hardwareMap);
         labl = new BServo("labl", hardwareMap, true);
 
-        sp = new SensorPool(hardwareMap, console);
+        //sp = new SensorPool(hardwareMap, console);
 
         cds.set(0.7);
         cdl.set(0);
         cdr.set(0);
 
-        labr.set(0);
-        labl.set(0);
+        labr.set(0.5);
+        labl.set(0.5);
+
+        labtc = System.currentTimeMillis();
     }
 
-    double labcr=0, labcl=0;
+    public double labcr=0, labcl=0;
+
+    public long labtc;
 
     @Override
     public void update()
     {
         if(gp2_lt < 0.05 && !gamepad2.b) cds.set(0.7);
         else cds.set(0);
-        sp.update();
+        //sp.update();
 
-        labcr += 
+        long diff = labtc - System.currentTimeMillis();
+        labtc = System.currentTimeMillis();
+
+        if(gp2_rt < 0.2 && labcr > 0)
+        {
+            labr.set(0);
+        }
+        else if(gp2_rt < 0.2 && labcr <= 0)
+        {
+            labr.set(0.5);
+        }
+
+        if(gp2_lt < 0.2 && labcl > 0)
+        {
+            labl.set(0);
+        }
+        else if(gp2_lt < 0.2 && labcl <= 0)
+        {
+            labl.set(0.5);
+        }
+
+        labcr += labr.get() * diff;
+        labcl += labl.get() * diff;
 
     }
 
@@ -162,6 +188,17 @@ public class RootDrive extends Root {
     public void onJoy2_lt()
     {
         labl.set(1);
+    }
+
+    @Override
+    public void onXButton2()
+    {
+        labl.set(-1);
+    }
+
+    public void onYButton2()
+    {
+        labr.set(-1);
     }
 
 }
