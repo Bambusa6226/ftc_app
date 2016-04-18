@@ -39,6 +39,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -77,6 +78,8 @@ import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class FtcRobotControllerActivity extends Activity {
 
@@ -111,7 +114,12 @@ public class FtcRobotControllerActivity extends Activity {
     public static boolean isRed;
     public static int waittime;
 
+<<<<<<< HEAD
     protected FtcRobotControllerService controllerService;
+=======
+  protected FtcEventLoop eventLoop;
+  protected Queue<UsbDevice> receivedUsbAttachmentNotifications;
+>>>>>>> upstream/master
 
     protected FtcEventLoop eventLoop;
 
@@ -268,6 +276,7 @@ public class FtcRobotControllerActivity extends Activity {
 
         wifiLock.acquire();
     }
+<<<<<<< HEAD
 
     @Override
     protected void onResume() {
@@ -277,6 +286,153 @@ public class FtcRobotControllerActivity extends Activity {
     @Override
     public void onPause() {
         super.onPause();
+=======
+  };
+
+  @Override
+  protected void onNewIntent(Intent intent) {
+    super.onNewIntent(intent);
+
+    if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(intent.getAction())) {
+      UsbDevice usbDevice = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+      if (usbDevice != null) {  // paranoia
+        // We might get attachment notifications before the event loop is set up, so
+        // we hold on to them and pass them along only when we're good and ready.
+        if (receivedUsbAttachmentNotifications != null) { // *total* paranoia
+          receivedUsbAttachmentNotifications.add(usbDevice);
+          passReceivedUsbAttachmentsToEventLoop();
+        }
+      }
+    }
+  }
+
+  protected void passReceivedUsbAttachmentsToEventLoop() {
+    if (this.eventLoop != null) {
+      for (;;) {
+        UsbDevice usbDevice = receivedUsbAttachmentNotifications.poll();
+        if (usbDevice == null)
+          break;
+        this.eventLoop.onUsbDeviceAttached(usbDevice);
+      }
+    }
+    else {
+      // Paranoia: we don't want the pending list to grow without bound when we don't
+      // (yet) have an event loop
+      while (receivedUsbAttachmentNotifications.size() > 100) {
+        receivedUsbAttachmentNotifications.poll();
+      }
+    }
+  }
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+
+    receivedUsbAttachmentNotifications = new ConcurrentLinkedQueue<UsbDevice>();
+    eventLoop = null;
+
+    setContentView(R.layout.activity_ftc_controller);
+
+    utility = new Utility(this);
+    context = this;
+    entireScreenLayout = (LinearLayout) findViewById(R.id.entire_screen);
+    buttonMenu = (ImageButton) findViewById(R.id.menu_buttons);
+    buttonMenu.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        openOptionsMenu();
+      }
+    });
+
+    textDeviceName = (TextView) findViewById(R.id.textDeviceName);
+    textWifiDirectStatus = (TextView) findViewById(R.id.textWifiDirectStatus);
+    textRobotStatus = (TextView) findViewById(R.id.textRobotStatus);
+    textOpMode = (TextView) findViewById(R.id.textOpMode);
+    textErrorMessage = (TextView) findViewById(R.id.textErrorMessage);
+    textGamepad[0] = (TextView) findViewById(R.id.textGamepad1);
+    textGamepad[1] = (TextView) findViewById(R.id.textGamepad2);
+    immersion = new ImmersiveMode(getWindow().getDecorView());
+    dimmer = new Dimmer(this);
+    dimmer.longBright();
+    Restarter restarter = new RobotRestarter();
+
+    updateUI = new UpdateUI(this, dimmer);
+    updateUI.setRestarter(restarter);
+    updateUI.setTextViews(textWifiDirectStatus, textRobotStatus,
+        textGamepad, textOpMode, textErrorMessage, textDeviceName);
+    callback = updateUI.new Callback();
+
+    PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+    preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+    WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+    wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "");
+
+    hittingMenuButtonBrightensScreen();
+
+    if (USE_DEVICE_EMULATION) { HardwareFactory.enableDeviceEmulation(); }
+  }
+
+  @Override
+  protected void onStart() {
+    super.onStart();
+
+    // save 4MB of logcat to the SD card
+    RobotLog.writeLogcatToDisk(this, 4 * 1024);
+
+    Intent intent = new Intent(this, FtcRobotControllerService.class);
+    bindService(intent, connection, Context.BIND_AUTO_CREATE);
+
+    utility.updateHeader(Utility.NO_FILE, R.string.pref_hardware_config_filename, R.id.active_filename, R.id.included_header);
+
+    callback.wifiDirectUpdate(WifiDirectAssistant.Event.DISCONNECTED);
+
+    entireScreenLayout.setOnTouchListener(new View.OnTouchListener() {
+      @Override
+      public boolean onTouch(View v, MotionEvent event) {
+        dimmer.handleDimTimer();
+        return false;
+      }
+    });
+
+    wifiLock.acquire();
+  }
+
+  @Override
+  protected void onResume() {
+    super.onResume();
+  }
+
+  @Override
+  public void onPause() {
+    super.onPause();
+  }
+
+  @Override
+  protected void onStop() {
+    super.onStop();
+
+    if (controllerService != null) unbindService(connection);
+
+    RobotLog.cancelWriteLogcatToDisk(this);
+
+    wifiLock.release();
+  }
+
+  @Override
+  public void onWindowFocusChanged(boolean hasFocus){
+    super.onWindowFocusChanged(hasFocus);
+    // When the window loses focus (e.g., the action overflow is shown),
+    // cancel any pending hide action. When the window gains focus,
+    // hide the system UI.
+    if (hasFocus) {
+      if (ImmersiveMode.apiOver19()){
+        // Immersive flag only works on API 19 and above.
+        immersion.hideSystemUI();
+      }
+    } else {
+      immersion.cancelSystemUIHide();
+>>>>>>> upstream/master
     }
 
     @Override
@@ -397,9 +553,17 @@ public class FtcRobotControllerActivity extends Activity {
 
         eventLoop = new FtcEventLoop(factory, new FtcOpModeRegister(), callback, this);
 
+<<<<<<< HEAD
         controllerService.setCallback(callback);
         controllerService.setupRobot(eventLoop);
     }
+=======
+    controllerService.setCallback(callback);
+    controllerService.setupRobot(eventLoop);
+
+    passReceivedUsbAttachmentsToEventLoop();
+  }
+>>>>>>> upstream/master
 
     private FileInputStream fileSetup() {
 
